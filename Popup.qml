@@ -11,8 +11,8 @@ PopupWindow {
     anchor.rect.x: xPos
     anchor.rect.y: -implicitHeight/2 + triggerWindow.height/2
 
-    implicitWidth: 400
-    implicitHeight: 500
+    implicitWidth: 600
+    implicitHeight: 400
 
     Behavior on xPos { NumberAnimation { duration: 200 } }
 
