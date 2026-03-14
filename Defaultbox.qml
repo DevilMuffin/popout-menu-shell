@@ -18,6 +18,8 @@ Rectangle {
     color: "#303030"
     opacity: fadeOpacity
 
+    property string logo: ""
+
     property string userName: ""
     property string hostName: ""
 
@@ -33,11 +35,36 @@ Rectangle {
 
     property string windowManager: ""
 
+    Item {
+    id: logoContainer
+    anchors.left: parent.left
+    anchors.leftMargin: 20
+    anchors.verticalCenter: parent.verticalCenter
+
+        Column {
+            id: logoColumn
+            spacing: 0
+            anchors.verticalCenter: parent.verticalCenter
+
+            Repeater {
+                model: mainRect.logo.split("\n")
+                Text {
+                    text: modelData
+                    font.pixelSize: 20
+                    font.family: "Jetbrains Mono NL"
+                    color: "#00ffd2"
+                }
+            }
+        }
+    }   
+
     Column {
         id: stats
         spacing: 15
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 75
+
+        anchors.right: parent.right
+        anchors.rightMargin: 20
+        anchors.verticalCenter: parent.verticalCenter
 
         Text {
             text: mainRect.userName + "@" + mainRect.hostName
@@ -134,6 +161,19 @@ Rectangle {
             }
         }
     }
+
+    Process {
+        id: logoProc
+        running: true
+        command: ["fastfetch", "--structure", "logo", "--logo-type", "small"]
+
+        stdout: StdioCollector {
+        onStreamFinished: {
+            mainRect.logo = mainRect.logo = text.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "")
+            }
+        }
+    }
+    
 
     Timer {
         interval: 2000
