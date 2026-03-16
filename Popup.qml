@@ -33,4 +33,31 @@ PopupWindow {
             defaultBox.fadeOpacity  = 0
         }
     }
+
+    property bool scrollable: true
+
+    Timer {
+        id: scrollCooldown
+
+        interval: 1000
+        running: false
+        onTriggered: triggerWindow.scrollable = true
+        
+    }
+
+    MouseArea {
+        anchors.fill: parent
+
+        onWheel: (wheel)=> {
+            if (wheel.angleDelta.y > 0 && scrollable) {
+                console.log("Scrolled up")
+                scrollable = false
+                scrollCooldown.running = true
+            } else if (wheel.angleDelta.y < 0 && scrollable) {
+                scrollable = false
+                scrollCooldown.running = true
+                console.log("Scrolled down")
+            }
+        }
+    }
 } 

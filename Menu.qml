@@ -39,4 +39,25 @@ Scope {
         
         Popup {}     
     }
+
+    PanelWindow {
+        id: closeArea
+
+        visible: triggerWindow.expanded
+
+        anchors {
+            left: true
+            right: true
+            top: true
+            bottom: true
+        }
+
+        color: "transparent"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: triggerWindow.expanded = false
+
+        }
+    }
 }
