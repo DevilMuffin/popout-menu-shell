@@ -80,7 +80,6 @@ PopupWindow {
                 }
                 scrollable = false
                 scrollCooldown.running = true
-                console.log("Scrolled down")
             }
         }
     }

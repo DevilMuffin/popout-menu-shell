@@ -41,20 +41,19 @@ Rectangle {
         }
     }
 
-function getWeekdayFromDate(dateString) {
-    var date = new Date(dateString)
-    var today = new Date()
+    function getWeekdayFromDate(dateString) {
+        var date = new Date(dateString)
+        var today = new Date()
 
-    if (date.getDate() === today.getDate() &&
-        date.getMonth() === today.getMonth() &&
-        date.getFullYear() === today.getFullYear()) {
-        return "Today"
+        if (date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()) {
+            return "Today"
+        }
+
+        var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+        return days[date.getDay()]
     }
-
-    var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
-    return days[date.getDay()]
-}
-
 
     Text {
         text: "Temperature: " + temp + tempUnit
@@ -65,6 +64,97 @@ function getWeekdayFromDate(dateString) {
         font.pixelSize: 20
         font.family: "Jetbrains Mono NL"
         color: "#00ffd2"
+    }
+
+    Rectangle {
+        radius: 20
+        color: "#141414"
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: 20
+
+        implicitHeight: 120
+        implicitWidth: mainRect.width - 40
+
+        Row {
+            anchors.fill: parent.fill
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 7.5
+            anchors.bottomMargin: 20
+
+            Repeater {
+                model: mainRect.forecastArray
+
+                Rectangle {
+                    radius: 20
+                    color: "#545454"
+
+                    implicitHeight: 100
+                    implicitWidth: 70
+
+                    Text {
+                        text: modelData.day
+
+                        anchors.top: parent.top
+                        anchors.topMargin: 5
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+
+                        font.pixelSize: 12
+                        font.family: "Jetbrains Mono NL"
+                        color: "#00ffd2"
+                    }
+
+                    Text {
+                        text: modelData.weather
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenterOffset: -13
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter 
+
+                        font.pixelSize: 12
+                        font.family: "Jetbrains Mono NL"
+                        color: "#00ffd2"
+                    }
+
+                    Text {
+                        text: modelData.maxTemp + mainRect.tempUnit
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenterOffset: 13
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+
+                        font.pixelSize: 12
+                        font.family: "Jetbrains Mono NL"
+                        color: "#00ffd2"
+                    }
+
+                    Text {
+                        text: modelData.minTemp + mainRect.tempUnit
+
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 5
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+
+                        font.pixelSize: 12
+                        font.family: "Jetbrains Mono NL"
+                        color: "#00ffd2"
+                    }
+                }
+            }
+        }
     }
 
     Process {
@@ -113,11 +203,11 @@ function getWeekdayFromDate(dateString) {
             onStreamFinished: {
                 var data = JSON.parse(text)
 
-                mainRect.forecastArray = []
+                var newArray = []
 
                 var daysCount = data.daily.time.length
-                for (var i=0; i<daysCount; i++) {
-                    mainRect.forecastArray.push({
+                for (var i = 0; i < daysCount; i++) {
+                    newArray.push({
                         day: getWeekdayFromDate(data.daily.time[i]),
                         minTemp: data.daily.temperature_2m_min[i],
                         maxTemp: data.daily.temperature_2m_max[i],
@@ -125,7 +215,7 @@ function getWeekdayFromDate(dateString) {
                     })
                 }
 
-                console.log(JSON.stringify(mainRect.forecastArray, null, 2))
+                mainRect.forecastArray = newArray
             }
         }
     }
