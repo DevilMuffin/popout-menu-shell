@@ -31,10 +31,10 @@ Scope {
         }
 
         MouseArea {
-        id: trigger
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton
-        onClicked: triggerWindow.expanded = !triggerWindow.expanded
+            id: trigger
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton
+            onClicked: triggerWindow.expanded = !triggerWindow.expanded
         }
         
         Popup {}     

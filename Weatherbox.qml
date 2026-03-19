@@ -2,12 +2,17 @@
 
 import Quickshell
 import QtQuick
+import QtQuick.Layouts
 import QtQml
 import Quickshell.Io
 
 Rectangle {
     id: mainRect
     anchors.fill: parent
+
+    Icons {
+        id: icons
+    }
 
     property real fadeOpacity: 0
 
@@ -25,18 +30,26 @@ Rectangle {
 
     property var forecastArray: []
 
-    function weatherText(code) {
+    property var daysInMonthArray: []
+
+    property var daysOfTheWeek: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+
+    property int todayDay: new Date().getDate()
+
+
+
+    // Functions
+    function weatherIcon(code) {
         switch(code) {
-            case 0: return "Sunny"
-            case 1: return "Mostly clear"
-            case 2: return "Partly cloudy"
-            case 3: return "Overcast"
-            case 45: case 48: return "Foggy"
-            case 51: case 53: case 55: return "Drizzle"
-            case 61: case 63: case 65: return "Rainy"
-            case 71: case 73: case 75: return "Snowy"
-            case 80: case 81: case 82: return "Rain showers"
-            case 95: case 99: return "Thunderstorm"
+            case 0: return icons.sunny
+            case 1: return icons.partlyCloudy
+            case 2: return icons.cloudy
+            case 3: return icons.overcast
+            case 45: case 48: return icons.fog
+            case 51: case 53: case 55: return icons.drizzle
+            case 61: case 63: case 65: case 80: case 81: case 82:return icons.rain
+            case 71: case 73: case 75: return icons.snow
+            case 95: case 99: return icons.thunderstorms
             default: return "Unknown"
         }
     }
@@ -55,17 +68,144 @@ Rectangle {
         return days[date.getDay()]
     }
 
-    Text {
-        text: "Temperature: " + temp + tempUnit
+    function getDaysInMonth() {
+        const today = new Date()
+        const year = today.getFullYear()
+        const month = today.getMonth()
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        const firstDay = new Date(year, month, 1).getDay()
+        
+        const offset = (firstDay + 6) % 7
+        const daysArray = []
 
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
+        for (let i = 0; i < offset; i++) {
+            daysArray.push("")
+        }
 
-        font.pixelSize: 20
-        font.family: "Jetbrains Mono NL"
-        color: "#00ffd2"
+        for (let d = 1; d <= daysInMonth; d++) {
+            daysArray.push(d)
+        }
+
+        mainRect.daysInMonthArray = daysArray
     }
 
+    Component.onCompleted: {
+        getDaysInMonth()
+    }
+
+    // Row for current temp and calander
+    Row {
+        spacing: 40
+
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        anchors.topMargin: 30
+        anchors.leftMargin:20
+        anchors.rightMargin: 20
+
+        // Current temp rectangle
+        Rectangle {
+            radius: 20
+            color: "#141414"
+
+            implicitHeight: 200
+            implicitWidth: mainRect.width / 2 - 80
+            
+            Text {
+                text: "Right Now"
+
+                anchors.top: parent.top
+                anchors.topMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                font.pixelSize: 20
+                font.family: "Jetbrains Mono NL"
+                color: "white"
+            }
+
+            Image {
+                source: forecastArray.length > 0 ? forecastArray[0].weatherIcon : ""
+
+                width: 100
+                height: 100
+
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                fillMode: Image.PreserveAspectFit
+            }
+
+            Text {
+                text: temp + tempUnit
+
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                font.pixelSize: 20
+                font.family: "Jetbrains Mono NL"
+                color: "white"
+            }
+        }
+
+        Rectangle {
+            radius: 20
+            color: "#141414"
+
+            implicitHeight: 200
+            implicitWidth: mainRect.width / 2 
+
+            GridLayout {
+                columns: 7
+                columnSpacing: 10
+                rowSpacing: 5
+                anchors.top: parent.top
+                anchors.topMargin: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Repeater {
+                    model: daysOfTheWeek
+
+                    Text {
+                        anchors.fill: parent.fill
+                        text: modelData
+                        color: "white"
+                        font.family: "Jetbrains Mono NL"
+                        font.pixelSize: 15
+
+                    }
+                }
+
+                Repeater {
+                    model: daysInMonthArray
+
+                    Rectangle {
+                        radius: 5
+
+                        implicitWidth: 22
+                        implicitHeight: 22
+
+                        color: modelData === todayDay ? "#00ffd2" : "transparent"
+
+                        Text {
+                            anchors.fill: parent.fill
+                            text: modelData
+                            color: modelData === todayDay ? "black" : "white"
+                            font.family: "Jetbrains Mono NL"
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    // Rectangle for weekly forecast
     Rectangle {
         radius: 20
         color: "#141414"
@@ -105,22 +245,21 @@ Rectangle {
 
                         font.pixelSize: 12
                         font.family: "Jetbrains Mono NL"
-                        color: "#00ffd2"
+                        color: "white"
                     }
 
-                    Text {
-                        text: modelData.weather
+
+                    Image {
+                        source: modelData.weatherIcon
+
+                        width: 36
+                        height: 36
 
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.verticalCenterOffset: -13
                         anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenterOffset: -13
 
-                        width: parent.width
-                        horizontalAlignment: Text.AlignHCenter 
-
-                        font.pixelSize: 12
-                        font.family: "Jetbrains Mono NL"
-                        color: "#00ffd2"
+                        fillMode: Image.PreserveAspectFit
                     }
 
                     Text {
@@ -135,7 +274,7 @@ Rectangle {
 
                         font.pixelSize: 12
                         font.family: "Jetbrains Mono NL"
-                        color: "#00ffd2"
+                        color: "white"
                     }
 
                     Text {
@@ -150,13 +289,14 @@ Rectangle {
 
                         font.pixelSize: 12
                         font.family: "Jetbrains Mono NL"
-                        color: "#00ffd2"
+                        color: "#b6b6b6"
                     }
                 }
             }
         }
     }
 
+    // Processes
     Process {
         id: locaitonGrabber
         running: true
@@ -211,7 +351,7 @@ Rectangle {
                         day: getWeekdayFromDate(data.daily.time[i]),
                         minTemp: data.daily.temperature_2m_min[i],
                         maxTemp: data.daily.temperature_2m_max[i],
-                        weather: weatherText(data.daily.weathercode[i])
+                        weatherIcon: weatherIcon(data.daily.weathercode[i])
                     })
                 }
 
