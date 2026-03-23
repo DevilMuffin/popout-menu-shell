@@ -13,13 +13,11 @@ PopupWindow {
 
     property bool pcStats: true
     property bool weather: false
+    property bool music: false
 
-    // Animation props
     property real popupOpacity: 0
 
-    // visibility control
     property bool actuallyVisible: false
-    
 
     anchor.window: triggerWindow
     anchor.rect.x: xPos
@@ -32,7 +30,6 @@ PopupWindow {
 
     color: "transparent"
 
-    // Smooth position animation
     Behavior on xPos {
         NumberAnimation {
             duration: 300
@@ -47,13 +44,12 @@ PopupWindow {
         }
     }
 
-    // 👇 MAIN CONTAINER (this is what we animate instead of PopupWindow)
     Item {
         id: content
         anchors.fill: parent
 
         opacity: popupOpacity
-        scale: popupOpacity < 1 ? 0.97 : 1   // subtle pop effect
+        scale: popupOpacity < 1 ? 0.97 : 1
 
         Behavior on opacity {
             NumberAnimation {
@@ -79,13 +75,17 @@ PopupWindow {
             id: weatherBox
             visible: weather
         }
+
+        Musicbox {
+            id: musicBox
+            visible: music
+        }
     }
 
     Animations {
         id: animManager
     }
 
-    // OPEN / CLOSE
     Connections {
         target: triggerWindow
 
@@ -115,7 +115,6 @@ PopupWindow {
         onTriggered: actuallyVisible = false
     }
 
-    // Scroll cooldown
     Timer {
         id: scrollCooldown
         interval: 300
@@ -125,16 +124,26 @@ PopupWindow {
     MouseArea {
         anchors.fill: parent
 
+        acceptedButtons: Qt.NoButton
+
         onWheel: (wheel)=> {
             if (wheel.angleDelta.y > 0 && scrollable) {
                 if (pcStats) {
                     animManager.upToWeatherAnim.start()
+                } else if (weather) {
+                    animManager.upToMusicAnim.start()
+                } else if (music) {
+                    animManager.upToStatsAnim.start()
                 }
                 scrollable = false
                 scrollCooldown.start()
             } else if (wheel.angleDelta.y < 0 && scrollable) {
                 if (weather) {
                     animManager.downToStatsAnim.start()
+                } else if (pcStats) {
+                    animManager.downToMusicAnim.start()
+                } else if (music) {
+                    animManager.downToWeatherAnim.start()
                 }
                 scrollable = false
                 scrollCooldown.start()
