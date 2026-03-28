@@ -213,7 +213,7 @@ Scope {
             NumberAnimation {
                 target: defaultBox
                 property: "fadeOpacity"
-                to: 300
+                to: 0.9
                 duration: 250
             }
         }
@@ -263,7 +263,7 @@ Scope {
             NumberAnimation {
                 target: musicBox
                 property: "fadeOpacity"
-                to: 300
+                to: 0.9
                 duration: 250
             }
         }
@@ -313,7 +313,7 @@ Scope {
             NumberAnimation {
                 target: weatherBox
                 property: "fadeOpacity"
-                to: 300
+                to: 0.9
                 duration: 250
             }
         }
