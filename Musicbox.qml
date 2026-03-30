@@ -59,208 +59,247 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: artDisplay
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 30
-
-        radius: 5
-        color: "white"
-        border.width: 10
-        border.color: "black"
-
-        width: art.width + 10
-        height: 170
-
-        Image {
-            id: art
-            anchors.centerIn: parent
-            source: active?.trackArtUrl ?? ""
-            height: 160
-            fillMode: Image.PreserveAspectFit
-            cache: false
-        }
-    }
-
-    Rectangle {
-        anchors.horizontalCenter: parent.horizontalCenter
+    Column {
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset:20
+        anchors.left: parent.left
+        anchors.leftMargin: 50
 
-        color: "black"
-        radius: 5
-        height: 30
-        width: textItem.paintedWidth + 20
-
-        Text {
-            id: textItem
-            anchors.centerIn: parent
-            text: active?.trackTitle ?? "No track"
-            color: "white"
-            font.pixelSize: 16
+        Repeater {
+            model: Mpris.players.values
+            delegate: Image {
+                width: 32
+                height: 32
+                fillMode: Image.PreserveAspectFit
+                source: modelData ?
+                    "/usr/share/icons/hicolor/48x48/apps/" + modelData.desktopEntry + ".png"
+                    : ""
+            }
         }
     }
 
-    Slider {
-        id: positionSlider
+    Column {
+        spacing: 20
+        anchors.centerIn: parent
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 120
+        Rectangle {
+            id: artDisplay
+            anchors.horizontalCenter: parent.horizontalCenter
 
-        width: 300
-        height: 30
-
-        from: 0
-        to: (active?.length ?? 1) / 1000
-
-        property bool userDragging: false
-
-        value: 0
-
-        onPressedChanged: {
-            userDragging = pressed
-            if (!pressed && active) {
-                active.position = value * 1000
-            }
-        }
-
-        Timer {
-            interval: 100
-            repeat: true
-            running: active?.isPlaying && !positionSlider.userDragging
-            onTriggered: {
-                if (active) positionSlider.value = active.position / 1000
-            }
-        }
-
-        background: Rectangle {
-            anchors.fill: parent
             radius: 5
-            color: "black"
+            color: "white"
+            border.width: 10
+            border.color: "black"
 
-            Rectangle {
+            width: art.width + 10
+            height: 170
+
+            Image {
+                id: art
                 anchors.centerIn: parent
-                width: parent.width - 20
-                height: 6
-                radius: 3
+                source: active?.trackArtUrl ?? ""
+                height: 160
+                fillMode: Image.PreserveAspectFit
+                cache: false
+            }
+        }
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            color: "black"
+            radius: 5
+            height: 30
+            width: textItem.paintedWidth + 20
+
+            Text {
+                id: textItem
+                anchors.centerIn: parent
+                text: active?.trackTitle ?? "No track"
                 color: "white"
+                font.pixelSize: 16
+            }
+        }
+
+        Slider {
+            id: positionSlider
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            width: 300
+            height: 30
+
+            from: 0
+            to: (active?.length ?? 1) / 1000
+
+            property bool userDragging: false
+
+            value: 0
+
+            onPressedChanged: {
+                userDragging = pressed
+                if (!pressed && active) {
+                    active.position = value * 1000
+                }
+            }
+
+            Timer {
+                interval: 100
+                repeat: true
+                running: active?.isPlaying && !positionSlider.userDragging
+                onTriggered: {
+                    if (active) positionSlider.value = active.position / 1000
+                }
+            }
+
+            background: Rectangle {
+                anchors.fill: parent
+                radius: 5
+                color: "black"
 
                 Rectangle {
-                    width: parent.width * positionSlider.visualPosition
-                    height: parent.height
+                    anchors.centerIn: parent
+                    width: parent.width - 20
+                    height: 6
                     radius: 3
-                    color: "#00ffd2"
+                    color: "white"
+
+                    Rectangle {
+                        width: parent.width * positionSlider.visualPosition
+                        height: parent.height
+                        radius: 3
+                        color: "#00ffd2"
+                    }
                 }
+
+                Text {
+                    anchors.top: parent.bottom
+                    anchors.left: parent.left
+                    color: "white"
+                    font.family: "Jetbrains Mono NL"
+                    font.pixelSize: 15
+
+                    text: Math.floor(active.position / 60) + ":" +
+                        ((Math.floor(active.position) % 60) < 10 ? "0" : "") +
+                        (Math.floor(active.position) % 60)
+                }
+
+                Text {
+                    anchors.top: parent.bottom
+                    anchors.right: parent.right
+                    color: "white"
+                    font.pixelSize: 15
+                    
+                    text: Math.floor(active.length / 60) + ":" +
+                        ((Math.floor(active.length) % 60) < 10 ? "0" : "") +
+                        (Math.floor(active.length) % 60)
+                }
+            }
+
+            handle: Rectangle {
+                width: 14
+                height: 14
+                radius: width / 2
+                color: "white"
+
+                x: 10 + positionSlider.visualPosition * (positionSlider.availableWidth - 20)
+                y: (positionSlider.height - height) / 2
+
+                scale: positionSlider.pressed ? 1.2 : 1
+                Behavior on scale { NumberAnimation { duration: 100 } }
             }
         }
 
-        handle: Rectangle {
-            width: 14
-            height: 14
-            radius: width / 2
-            color: "white"
-
-            x: 10 + positionSlider.visualPosition * (positionSlider.availableWidth - 20)
-            y: (positionSlider.height - height) / 2
-
-            scale: positionSlider.pressed ? 1.2 : 1
-            Behavior on scale { NumberAnimation { duration: 100 } }
+        Rectangle {
+            color: "transparent"
+            height: 1
+            width: 1
         }
-    }
 
-    Rectangle {
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 30
-        anchors.horizontalCenter: parent.horizontalCenter
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            radius: 5
+            color: "black"
+            height: 75
+            width: 240
 
-        z: 10
+            Row {
+                spacing: 20
+                anchors.centerIn: parent
 
-        radius: 5
-        color: "black"
-        height: 75
-        width: 240
+                Rectangle {
+                    id: playPrevious
+                    height: 50
+                    width: 50
+                    radius: width/2
+                    color: "black"
+                    Behavior on color { ColorAnimation { duration: 200 } }
 
-        Row {
-            spacing: 20
-            anchors.centerIn: parent
+                    Text {
+                        id: previousLabel
+                        anchors.centerIn: parent
+                        text: "⏮"
+                        font.pixelSize: 30
+                        font.family: "Jetbrains Mono NL"
+                        color: "white"
+                    }
 
-            Rectangle {
-                id: playPrevious
-                height: 50
-                width: 50
-                radius: width/2
-                color: "black"
-                Behavior on color { ColorAnimation { duration: 200 } }
-
-                Text {
-                    id: previousLabel
-                    anchors.centerIn: parent
-                    text: "⏮"
-                    font.pixelSize: 30
-                    font.family: "Jetbrains Mono NL"
-                    color: "white"
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true 
+                        onEntered: { parent.color = "#00ffd2"; previousLabel.color = "black" }
+                        onExited: { parent.color = "black"; previousLabel.color = "white" }
+                        onClicked: active.previous()
+                    }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true 
-                    onEntered: { parent.color = "#00ffd2"; previousLabel.color = "black" }
-                    onExited: { parent.color = "black"; previousLabel.color = "white" }
-                    onClicked: active.previous()
-                }
-            }
+                Rectangle {
+                    id: playAndPause
+                    height: 50
+                    width: 50
+                    radius: width/2
+                    color: "black"
+                    Behavior on color { ColorAnimation { duration: 200 } }
 
-            Rectangle {
-                id: playAndPause
-                height: 50
-                width: 50
-                radius: width/2
-                color: "black"
-                Behavior on color { ColorAnimation { duration: 200 } }
+                    Text {
+                        id: playPauseLabel
+                        anchors.centerIn: parent
+                        text: active?.isPlaying ? "⏸" : "▶"
+                        font.pixelSize: 30
+                        font.family: "Jetbrains Mono NL"
+                        color: "white"
+                    }
 
-                Text {
-                    id: playPauseLabel
-                    anchors.centerIn: parent
-                    text: active?.isPlaying ? "⏸" : "▶"
-                    font.pixelSize: 30
-                    font.family: "Jetbrains Mono NL"
-                    color: "white"
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true 
-                    onEntered: { parent.color = "#00ffd2"; playPauseLabel.color = "black" }
-                    onExited: { parent.color = "black"; playPauseLabel.color = "white" }
-                    onClicked: active.togglePlaying()
-                }   
-            }
-
-            Rectangle {
-                id: playNext
-                height: 50
-                width: 50
-                radius: width/2
-                color: "black"
-                Behavior on color { ColorAnimation { duration: 200 } }
-
-                Text {
-                    id: nextLabel
-                    anchors.centerIn: parent
-                    text: "⏭"
-                    font.pixelSize: 30
-                    font.family: "Jetbrains Mono NL"
-                    color: "white"
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true 
+                        onEntered: { parent.color = "#00ffd2"; playPauseLabel.color = "black" }
+                        onExited: { parent.color = "black"; playPauseLabel.color = "white" }
+                        onClicked: active.togglePlaying()
+                    }   
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true 
-                    onEntered: { parent.color = "#00ffd2"; nextLabel.color = "black" }
-                    onExited: { parent.color = "black"; nextLabel.color = "white" }
-                    onClicked: active.next()
+                Rectangle {
+                    id: playNext
+                    height: 50
+                    width: 50
+                    radius: width/2
+                    color: "black"
+                    Behavior on color { ColorAnimation { duration: 200 } }
+
+                    Text {
+                        id: nextLabel
+                        anchors.centerIn: parent
+                        text: "⏭"
+                        font.pixelSize: 30
+                        font.family: "Jetbrains Mono NL"
+                        color: "white"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true 
+                        onEntered: { parent.color = "#00ffd2"; nextLabel.color = "black" }
+                        onExited: { parent.color = "black"; nextLabel.color = "white" }
+                        onClicked: active.next()
+                    }
                 }
             }
         }
